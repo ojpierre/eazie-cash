@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TypewriterEffect } from "@/components/typewriter-effect";
+import { TypewriterEffect } from "../components/typewriter-effect";
 
 export default function RegisterPage() {
   const [showPayment, setShowPayment] = useState(false);

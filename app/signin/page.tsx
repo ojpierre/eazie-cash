@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TypewriterEffect } from "@/components/typewriter-effect";
+import { TypewriterEffect } from "../components/typewriter-effect";
 
 export default function SignInPage() {
   const handleSubmit = (e: React.FormEvent) => {
