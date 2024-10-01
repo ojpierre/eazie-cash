@@ -1,15 +1,33 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TypewriterEffect } from "../components/typewriter-effect";
+import { ErrorMessage } from "../components/ErrorMessage";
+import { loginUser } from "@/app/services/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function SignInPage() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const { dispatch } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign-in logic here
+    try {
+      const { token, user } = await loginUser({ email, password });
+      localStorage.setItem("token", token);
+      dispatch({ type: "LOGIN", payload: user });
+      router.push("/dashboard");
+    } catch (error) {
+      setError("Invalid email or password");
+    }
   };
 
   return (
@@ -30,13 +48,16 @@ export default function SignInPage() {
           <h1 className="text-2xl font-bold mb-6 text-center">
             Sign In to EazieCash
           </h1>
+          {error && <ErrorMessage title="Error" message={error} />}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email or Mobile</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="text"
-                placeholder="Enter email or mobile"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email"
                 required
               />
             </div>
@@ -45,6 +66,8 @@ export default function SignInPage() {
               <Input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
                 required
               />
