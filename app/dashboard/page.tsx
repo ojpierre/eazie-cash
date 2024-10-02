@@ -1,37 +1,52 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/app/context/AuthContext";
+import { logoutUser } from "@/app/services/api";
 
 export default function DashboardPage() {
-  const { state } = useAuth();
+  const { state, dispatch } = useAuth();
   const [isActivated, setIsActivated] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // In a real application, you would check the user's activation status from the backend
-    // For this example, we'll simulate a delay and then set the account as activated
-    const timer = setTimeout(() => {
-      setIsActivated(true);
-    }, 5000);
+    if (!state.isAuthenticated && !state.isLoading) {
+      router.push("/signin");
+    }
+  }, [state.isAuthenticated, state.isLoading, router]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => {
+    if (state.user) {
+      setIsActivated(state.user.isActivated);
+    }
+  }, [state.user]);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    dispatch({ type: "LOGOUT" });
+    router.push("/");
+  };
+
+  if (state.isLoading || !state.user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="text-2xl font-bold text-purple-600">EazieCash</div>
-          <Button variant="outline">Logout</Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
         </nav>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">
-          Welcome, {state.user?.name || "User"}!
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">Welcome, {state.user.name}!</h1>
 
         {!isActivated && (
           <Card className="mb-8">
