@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,18 +15,49 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TypewriterEffect } from "../components/typewriter-effect";
+import { ErrorMessage } from "../components/ErrorMessage";
+import { registerUser } from "@/app/services/api";
 
 export default function RegisterPage() {
-  const [showPayment, setShowPayment] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    mobile: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    country: "",
+  });
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowPayment(true);
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    console.log("Submitting form data:", formData); // Ensure all fields are present
+    try {
+      await registerUser(formData);
+      router.push("/payment");
+    } catch (error: any) {
+      console.error(
+        "Error during registration:",
+        error.response?.data || error.message
+      );
+      setError(
+        error.response?.data?.error || "Registration failed. Please try again."
+      );
+    }
   };
 
   return (
     <div className="min-h-screen flex">
-      <div className="w-1/2 bg-gradient-to-br from-purple-400 to-purple-600 p-12 flex flex-col justify-center items-center text-white">
+      <div className="w-1/2 bg-gradient-to-br from-green-400 to-purple-600 p-12 flex flex-col justify-center items-center text-white">
         <div className="text-4xl font-bold mb-8">EazieCash</div>
         <TypewriterEffect
           phrases={[
@@ -41,16 +73,25 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold mb-6 text-center">
             Sign Up for EazieCash
           </h1>
+          {error && <ErrorMessage title="Error" message={error} />}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="Enter username" required />
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter username"
+                required
+              />
             </div>
             <div>
               <Label htmlFor="mobile">Mobile</Label>
               <Input
                 id="mobile"
                 type="tel"
+                value={formData.mobile}
+                onChange={handleChange}
                 placeholder="Enter mobile number"
                 required
               />
@@ -60,6 +101,8 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter email address"
                 required
               />
@@ -69,6 +112,8 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Enter password"
                 required
               />
@@ -78,13 +123,19 @@ export default function RegisterPage() {
               <Input
                 id="confirmPassword"
                 type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="Confirm password"
                 required
               />
             </div>
             <div>
               <Label htmlFor="country">Country</Label>
-              <Select>
+              <Select
+                onValueChange={(value) =>
+                  setFormData({ ...formData, country: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
@@ -96,7 +147,7 @@ export default function RegisterPage() {
               </Select>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" />
+              <Checkbox id="terms" required />
               <label htmlFor="terms" className="text-sm">
                 I agree to the Terms & Conditions and Privacy Policy
               </label>
