@@ -1,17 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TypewriterEffect } from "../components/typewriter-effect";
+import { ErrorMessage } from "../components/ErrorMessage";
+import { confirmPayment } from "@/app/services/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function PaymentPage() {
   const [transactionId, setTransactionId] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const { state } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle payment confirmation logic here
+    try {
+      await confirmPayment({ transactionId, userId: state.user?.id });
+      router.push("/dashboard");
+    } catch (error: any) {
+      setError(
+        error.response?.data?.error ||
+          "Payment confirmation failed. Please try again."
+      );
+    }
   };
 
   return (
@@ -32,6 +47,7 @@ export default function PaymentPage() {
           <h1 className="text-2xl font-bold mb-6 text-center">
             Activation Payment
           </h1>
+          {error && <ErrorMessage title="Error" message={error} />}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">
               M-Pesa Payment Instructions
@@ -40,7 +56,7 @@ export default function PaymentPage() {
               <li>Dial *334# from your M-Pesa registered line.</li>
               <li>Select "Send Money".</li>
               <li>Select "Send to other Network".</li>
-              <li>Enter the Airtel mobile number 254756111419 (FRANCIS)</li>
+              <li>Enter the Airtel mobile number 254756444888 (VAN)</li>
               <li>Enter amount 540</li>
               <li>Enter your M-Pesa PIN.</li>
               <li>Confirm the details and complete the transaction.</li>
