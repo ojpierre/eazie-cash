@@ -22,11 +22,11 @@ export default function SignInPage() {
     e.preventDefault();
     try {
       const { token, user } = await loginUser({ email, password });
-      localStorage.setItem("token", token);
-      dispatch({ type: "LOGIN", payload: user });
-      router.push("/dashboard");
-    } catch (error) {
-      setError("Invalid email or password");
+      localStorage.setItem("token", token); // Save token
+      dispatch({ type: "LOGIN", payload: user }); // Dispatch user data
+      router.push("/dashboard"); // Redirect to dashboard
+    } catch (error: any) {
+      setError(error.message || "Invalid email or password"); // Show specific error message
     }
   };
 
